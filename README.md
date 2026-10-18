@@ -21,7 +21,7 @@
   <img alt="Render" src="https://img.shields.io/badge/Hosted%20on-Render-111827?style=flat-square" />
 </p>
 
-**[See the Live Demo](https://documind-demo-web.onrender.com) · [Features](#key-features) · [How It Works](#how-it-works) · [Architecture](#system-architecture) · [Run Locally](#local-development) · [Deploy](#deployment)**
+**[See the Live Demo](#live-demo) · [Features](#key-features) · [How It Works](#how-it-works) · [Architecture](#system-architecture) · [Run Locally](#local-development) · [Deploy](#deployment)**
 
 </div>
 
@@ -64,8 +64,8 @@ The user then checks the suggestions, edits any mistakes, and confirms the recor
 
 **The Render-hosted demo has been deployed and its document workflow has been reported working by the project owner.**
 
-> **Live application:** `https://YOUR-ACTUAL-FRONTEND-URL.onrender.com`  
-> Replace this placeholder with the URL shown in your Render **`documind-demo-web`** service before publishing this README.
+> **Live application:** `(https://documind-demo-web.onrender.com)`  
+
 
 **How to try it:**
 
