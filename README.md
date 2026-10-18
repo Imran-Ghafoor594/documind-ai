@@ -64,7 +64,7 @@ The user then checks the suggestions, edits any mistakes, and confirms the recor
 
 **The Render-hosted demo has been deployed and its document workflow has been reported working by the project owner.**
 
-> **Live application:** `(https://documind-demo-web.onrender.com)`  
+> **Live application:** [Live Demo](https://documind-demo-web.onrender.com) 
 
 
 **How to try it:**
