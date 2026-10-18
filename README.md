@@ -1,178 +1,402 @@
-> **Hacktoberfest Free Demo:** Use [`docs/FREE_DEMO_DEPLOYMENT.md`](docs/FREE_DEMO_DEPLOYMENT.md) and [`render-free.yaml`](render-free.yaml) for a free-tier *temporary, shared-access* deployment. The original `render.yaml` provisions paid persistent infrastructure. Do **not** apply it for a free demo. Only upload synthetic sample documents; free-tier OCR needs testing on the real host.
+<div align="center">
 
-> **Online deployment:** Start with [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
-> The supplied Render configuration uses server-side Tesseract, PostgreSQL and a paid upload disk.
-> No laptop OCR installation is required. Older local setup instructions below are optional.
-> Deployment is prepared, not yet live-verified; see [docs/VALIDATION.md](docs/VALIDATION.md).
+<img width="100%" alt="DocuMind AI banner" src="https://capsule-render.vercel.app/api?type=waving&amp;height=260&amp;color=0:071A2B,50:164E77,100:2A7FA5&amp;text=DocuMind%20AI&amp;fontSize=64&amp;fontColor=FFFFFF&amp;animation=fadeIn&amp;fontAlignY=42&amp;desc=From%20Documents%20to%20Decisions&amp;descAlignY=65&amp;descSize=19" />
 
-# DocuMind AI
+### Turn receipts and invoices into organized, reviewable expense records.
 
-> Turn messy documents into organized business insights.
+**An AI-assisted document intelligence workspace for freelancers and small businesses.**
 
-DocuMind AI is a small full-stack app for freelancers and small businesses. Upload an invoice or receipt, let an open-weight language model suggest the structured fields, check them against the original, and export confirmed records. Nothing counts toward your totals until a person confirms it.
+<p>
+  <img alt="Project status: live demo" src="https://img.shields.io/badge/Status-Live%20Demo-16A34A?style=for-the-badge" />
+  <img alt="Hacktoberfest 2026 Side Hustle" src="https://img.shields.io/badge/Hacktoberfest-2026%20Side%20Hustle-F97316?style=for-the-badge" />
+  <img alt="Open-weight AI" src="https://img.shields.io/badge/AI-Open--Weight%20LLM-2563EB?style=for-the-badge" />
+</p>
+<p>
+  <img alt="React 18" src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&amp;logo=react&amp;logoColor=black" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&amp;logo=vite&amp;logoColor=white" />
+  <img alt="Flask" src="https://img.shields.io/badge/Flask-Python-111827?style=flat-square&amp;logo=flask&amp;logoColor=white" />
+  <img alt="Groq" src="https://img.shields.io/badge/Groq-API-F97316?style=flat-square" />
+  <img alt="OCR" src="https://img.shields.io/badge/OCR-Tesseract%20%2B%20PyMuPDF-0891B2?style=flat-square" />
+  <img alt="Render" src="https://img.shields.io/badge/Hosted%20on-Render-111827?style=flat-square" />
+</p>
 
-Built for the Hacktoberfest 2026 DEV Community Open-Source AI Challenge (Week 2: Side Hustle). See [HACKTOBERFEST_SUBMISSION.md](HACKTOBERFEST_SUBMISSION.md).
+**[See the Live Demo](https://documind-demo-web.onrender.com) · [Features](#key-features) · [How It Works](#how-it-works) · [Architecture](#system-architecture) · [Run Locally](#local-development) · [Deploy](#deployment)**
 
-## Screenshots
+</div>
 
-All screenshots use fictional, synthetic documents from `backend/tests/visual_server.py`. (Headless Chromium has no PDF viewer, so these use an OCR'd image document for the preview.)
+---
 
-| | |
-|---|---|
-| ![Documents workspace](docs/screenshots/documents-workspace.png) | ![Review](docs/screenshots/review-queue.png) |
-| ![Overview](docs/screenshots/overview.png) | ![AI extraction](docs/screenshots/ai-extraction.png) |
-| ![Expenses](docs/screenshots/expenses.png) | ![Reports](docs/screenshots/reports.png) |
+## Overview
 
-Mobile: `docs/screenshots/mobile-documents.png`, `docs/screenshots/mobile-review.png`.
+**DocuMind AI** transforms unstructured receipts, invoices, and bills into structured expense information using **PDF text extraction, OCR, and a configurable open-weight large language model**.
 
-## Problem and users
+Rather than automatically treating an AI response as financial truth, the application puts a **human review step** between extraction and reporting. Users can inspect the original document, correct extracted values, and explicitly confirm a record before it appears in expense totals and reports.
 
-Small operators keep expenses in email attachments, phone photos and PDFs, then retype them into a spreadsheet at tax time. DocuMind AI targets freelancers, sole proprietors and very small teams who want less data entry but still want to stay in control of their numbers.
+> **Built for the DEV Community Hacktoberfest 2026 — Open-Source AI Challenge, Week 2: Side Hustle.** The current deployment is a temporary, shared-access demonstration, not a production accounting or document-storage service.
 
-## What is in the app
+## The Problem
 
-Pages (sidebar): **Overview**, **Documents** (list, preview, details), **AI Extraction**, **Review Queue**, **Expenses**, **Reports**, **Templates**, **Settings**, **Help & Support**. Top bar: breadcrumbs, live global search, Upload.
+Freelancers and small teams often receive expense paperwork in scattered forms: scanned receipts, invoice PDFs, screenshots, and phone photos. Turning those files into a usable spreadsheet means repeatedly entering vendors, dates, amounts, currencies, and categories by hand.
 
-- **Upload** PDF/JPG/PNG: drag and drop, size and type checks, magic-byte content check, progress, retry, double-submit protection, optional extraction template.
-- **Text extraction**: native PDF text (PyMuPDF), OCR fallback (Tesseract) for scans and images.
-- **AI extraction** via any OpenAI-compatible API (you choose the model). Server-side validation of every field.
-- **Provenance**: each field shows whether it came from the **AI**, a **template** default, or **you**. The raw text, the AI's suggestion and the current value are shown side by side. No confidence scores are shown because the model doesn't provide calibrated ones.
-- **Review Queue** with reasons (processing failed, missing required fields, no AI result, uncertain values, awaiting confirmation), edit, confirm, retry, reject (delete with confirmation). Processing status and verification status are separate.
-- **Templates** (stored in the database): name, description, document type, fields to extract, default category. Applied at upload or when re-running extraction. The field restriction is enforced in code, not just in the prompt; defaults are labelled "Template", never "AI".
-- **Expenses**: confirmed records only; search, date range, category, type, currency, sorting, pagination, detail dialog, CSV export of the current filters. Totals are per currency and never converted or mixed.
-- **Reports**: monthly, category and vendor summaries and a processing summary, from stored records, with date range and per-section CSV export. No PDF export.
-- **Settings**: default currency and date format (saved on the server), read-only processing/OCR/AI status, privacy and retention text. API keys are never shown and cannot be edited from the browser.
-- **Accessibility basics**: semantic landmarks, skip link, labelled controls, visible focus, dialogs with focus trap and Escape, `aria-sort` on sortable headers, `aria-current` navigation, reduced-motion support.
+Traditional OCR produces text, but **text alone is not an organized expense record**. Fully automatic AI extraction also introduces risk when a misread amount or an invented field silently enters a financial report.
 
-Everything displayed comes from the database. If it is empty you get an empty state, not demo numbers.
+## Who It's For
 
-## Architecture
+- **Freelancers** who want less time spent recording receipts and business expenses.
+- **Solo founders and side-hustle operators** managing purchases without dedicated accounting staff.
+- **Small teams** that need a reviewable document-to-CSV workflow.
+- **Developers** exploring practical, provider-configurable document AI applications.
 
+These are intended users, **not validated paying customers**.
+
+## The Solution
+
+DocuMind AI combines three complementary components:
+
+1. **PyMuPDF** reads the selectable text layer from digital PDFs without unnecessary OCR.
+2. **Tesseract OCR** reads scanned PDFs and JPG/PNG images when native text is missing.
+3. **Groq-hosted, open-weight AI** suggests structured fields from the extracted text; server-side validators flag or reject malformed values.
+
+The user then checks the suggestions, edits any mistakes, and confirms the record. **Only confirmed expenses enter analytics and exports.**
+
+## Live Demo
+
+**The Render-hosted demo has been deployed and its document workflow has been reported working by the project owner.**
+
+> **Live application:** `https://YOUR-ACTUAL-FRONTEND-URL.onrender.com`  
+> Replace this placeholder with the URL shown in your Render **`documind-demo-web`** service before publishing this README.
+
+**How to try it:**
+
+1. Open the live frontend URL.
+2. Enter the **shared demo access code** provided privately by the project owner.
+3. Upload a **fictional/sample** receipt or invoice (PDF, PNG, or JPG).
+4. Inspect extracted text and AI-suggested fields.
+5. Edit/confirm the record, then view Expenses, Reports, or export a CSV.
+
+**Demo restrictions:** files up to **3 MB**, up to **3 PDF pages**, temporary shared storage, and no real or confidential documents. The free backend may take time to wake after inactivity, and data can disappear on restart/redeploy.
+
+## Product Screenshots
+
+All bundled screenshots illustrate the project UI using synthetic documents. The paths below reference images already included in this repository.
+
+| Document workspace | AI extraction |
+|:---:|:---:|
+| ![Document list and preview workspace](docs/screenshots/documents-workspace.png) | ![AI extraction with proposed fields](docs/screenshots/ai-extraction.png) |
+
+| Review queue | Business overview |
+|:---:|:---:|
+| ![Human review queue](docs/screenshots/review-queue.png) | ![Overview dashboard](docs/screenshots/overview.png) |
+
+| Confirmed expenses | Reports |
+|:---:|:---:|
+| ![Confirmed expense records](docs/screenshots/expenses.png) | ![Expense reporting interface](docs/screenshots/reports.png) |
+
+<details>
+<summary><strong>Mobile screenshots</strong></summary>
+
+| Mobile documents | Mobile review |
+|:---:|:---:|
+| ![Mobile documents](docs/screenshots/mobile-documents.png) | ![Mobile review queue](docs/screenshots/mobile-review.png) |
+
+</details>
+
+## Key Features
+
+| Capability | What it does | Why it matters |
+|---|---|---|
+| **Document upload** | Supports PDF, PNG, and JPG, with size/type/content checks | Safer, simpler document intake |
+| **Hybrid text extraction** | PyMuPDF for native text; Tesseract for scanned/image documents | Handles both digital and photographed paperwork |
+| **AI-assisted structuring** | Suggests vendor, date, currency, totals, tax, category, and summary | Reduces repetitive manual entry |
+| **Human-in-the-loop review** | Side-by-side original, raw text, suggestions, and editable fields | Prevents unreviewed values from changing totals |
+| **Field provenance** | Labels values as **AI**, **Template**, or **You** | Makes the origin of each value visible |
+| **Review queue** | Shows pending, incomplete, or failed records; supports edit, retry, confirm, and reject | Keeps unresolved documents actionable |
+| **Extraction templates** | Selects expected fields and default categories | Helps repeat common document workflows |
+| **Expense management** | Filters, search, sorting, pagination, and per-currency totals | Turns approved documents into records |
+| **Reporting and CSV** | Monthly, vendor, and category summaries; CSV export | Makes information usable outside the app |
+| **Demo access gate** | Shared access code and expiring signed session | Reduces casual access to the public demo; **not** per-user authentication |
+| **Responsive UI** | Dedicated views for desktop and smaller screens | Supports different devices |
+
+### What gets extracted?
+
+The extraction contract includes the following fields:
+
+```json
+{
+  "document_type": "receipt",
+  "vendor": "Example Stationery Store",
+  "document_date": "2026-10-18",
+  "currency": "PKR",
+  "subtotal": "5500.00",
+  "tax": "500.00",
+  "total_amount": "6000.00",
+  "expense_category": "Office Supplies",
+  "short_summary": "Stationery and office equipment purchase"
+}
 ```
-React (Vite, Tailwind) --/api--> Flask --> SQLite (SQLAlchemy)
-                                   |--> storage (uuid-named files, UPLOAD_DIR)
-                                   |--> extraction: PyMuPDF -> Tesseract (OCR fallback)
-                                   '--> ai: OpenAI-compatible HTTP API (optional)
+
+*Illustrative synthetic example — not a claim that an AI model returned these exact values. Missing or invalid suggestions can remain empty until reviewed.*
+
+## How It Works
+
+```mermaid
+flowchart LR
+    A[Upload PDF / JPG / PNG] --> B[Validate file]
+    B --> C{Readable PDF text?}
+    C -->|Yes| D[PyMuPDF text]
+    C -->|No / image| E[Tesseract OCR]
+    D --> F[Groq open-weight LLM]
+    E --> F
+    F --> G[Validate extracted fields]
+    G --> H[Review and edit]
+    H --> I{Confirmed?}
+    I -->|No| H
+    I -->|Yes| J[Expenses and reports]
+    J --> K[CSV export]
 ```
 
-Upload flow: validate file -> store -> extract text -> (if configured) call AI with the optional template -> validate/normalise -> `review_required` -> user edits and confirms -> counts toward totals. Processing runs inside the upload request (simple, but slow files block that request).
+**Important design choice:** AI proposes; the user approves. Documents with AI errors can still be reviewed manually rather than being silently marked as successful.
 
-Backend: `backend/app/{config,db,models,validation,routes,routes_templates,routes_reports,errors}.py`, `services/{storage,ocr,extraction,ai,processing}.py`.
-Frontend: `frontend/src/{api.ts,context.tsx,router.ts}`, `pages/` (nine screens), `components/` (Sidebar, TopBar, Dialog + confirm, Toast, Menu, Pagination, Badges, DocumentBrowser, DocumentPreview, FieldTable, ReviewForm, Charts, ...), `lib/`.
-The existing SQLite file of an older version is upgraded in place on start (new columns are added automatically).
+## System Architecture
 
-## How OCR works
+```mermaid
+flowchart TD
+    U[User / Demo Reviewer] --> WEB[React 18 + TypeScript + Vite]
+    WEB -->|HTTPS REST /api| API[Flask API on Render]
+    API --> ACCESS[Signed demo session gate]
+    API --> STORE[(Temporary SQLite + File Storage)]
+    API --> TXT[Document processing]
+    TXT --> PDF[PyMuPDF: native PDF text]
+    TXT --> OCR[Tesseract: image and scanned-PDF OCR]
+    TXT --> AI[Groq API: open-weight model]
+    PDF --> REVIEW[Validated fields / human review]
+    OCR --> REVIEW
+    AI --> REVIEW
+    REVIEW --> STORE
+    STORE --> REPORTS[Dashboard / Expenses / Reports / CSV]
+    REPORTS --> WEB
+```
 
-1. PDF: read the text layer with PyMuPDF (first `MAX_PDF_PAGES` pages).
-2. If fewer than 40 non-space characters are found, render the pages (200 DPI, pixel-capped) and run Tesseract.
-3. Images go straight to Tesseract. Password-protected, damaged or oversized files fail with a clear message.
-4. If Tesseract is missing the app still starts; scanned files fail with an explanation. `/api/health` reports `ocr_available`.
+- The **frontend** never receives the Groq API key.
+- The **Flask backend** handles uploads, storage, extraction, review, and reporting.
+- The **Docker image** installs Tesseract on the hosting server; there is **no production OCR installation requirement on the developer's laptop**.
+- In the **free demo**, SQLite and uploaded files are **ephemeral**, not durable production storage.
+- Financial records are **never converted between currencies**; summaries keep currencies separate.
 
-## How the AI model is used
+### Tech Stack
 
-The extracted text (first 12,000 characters) is sent to `POST {AI_BASE_URL}/chat/completions` with a system prompt asking for one JSON object, `null` when unsure, and treating the document as untrusted data. The reply is parsed (code fences and `<think>` blocks are tolerated) and every field is validated in code: real `YYYY-MM-DD` dates, 3-letter currency codes, non-negative decimals, categories from a fixed list. Invalid values become `null` with a warning. Timeouts, 429 and 5xx are retried a limited number of times (`AI_MAX_RETRIES`); auth errors are not. If AI is not configured or fails, the document is still saved for manual entry and says so; nothing is faked.
-
-Which open-weight model to use is your choice. This project does not claim any particular model or provider works; check the model's licence and the provider's terms yourself.
-
-## Configure the AI provider
-
-Copy `.env.example` to `.env` and set:
-
-| Variable | Meaning |
+| Layer | Technology |
 |---|---|
-| `AI_PROVIDER` | `openai_compatible` (only provider implemented) |
-| `AI_BASE_URL` | Provider's OpenAI-compatible base URL, e.g. ending in `/v1` |
-| `AI_API_KEY` | Your key (never commit it; use any non-empty placeholder for a local server) |
-| `AI_MODEL` | Model id as the provider names it |
-| `AI_JSON_MODE` | `true`; set `false` if the provider rejects `response_format` |
-| `AI_TIMEOUT_SECONDS`, `AI_MAX_RETRIES` | Request limits |
+| UI | React 18, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts |
+| Backend API | Python 3.12, Flask, Flask-CORS, Gunicorn |
+| Data access | SQLAlchemy |
+| PDF parsing | PyMuPDF |
+| Optical character recognition | Tesseract OCR, pytesseract, Pillow |
+| LLM inference | GroqCloud OpenAI-compatible API; configurable model ID |
+| Default demo model | `openai/gpt-oss-20b` in `render-free.yaml` (availability may change) |
+| Demo persistence | SQLite + temporary filesystem |
+| Production-oriented configuration | PostgreSQL + persistent upload disk (**paid**, separate Blueprint) |
+| Hosting | Render Static Site + Docker Web Service |
+| Tests | pytest, Vitest, Testing Library; browser smoke-test tooling |
 
-Other variables: `DATABASE_URL`, `UPLOAD_DIR`, `MAX_UPLOAD_MB`, `MAX_PDF_PAGES`, `OCR_LANGUAGES`, `TESSERACT_CMD`, `CORS_ORIGINS`, `PORT`. Frontend: `VITE_API_BASE_URL` (production only).
+### Repository Layout
 
-## Local setup (Windows)
+```text
+DocuMind-AI/
+├── backend/
+│   ├── app/
+│   │   ├── services/           # PDF/OCR/AI/storage/processing
+│   │   ├── demo_auth.py        # Shared-code demo access gate
+│   │   ├── routes.py           # API and document workflows
+│   │   ├── routes_reports.py   # Analytics and CSV
+│   │   ├── routes_templates.py # Extraction templates
+│   │   └── config.py           # Environment configuration
+│   ├── tests/                 # Backend regression tests
+│   ├── Dockerfile             # Installs server-side Tesseract
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/        # Upload, preview, review, demo gate
+│   │   ├── pages/             # Nine application screens
+│   │   ├── api.ts             # Flask API client
+│   │   └── App.tsx
+│   └── package.json
+├── docs/
+│   ├── screenshots/
+│   ├── FREE_DEMO_DEPLOYMENT.md
+│   ├── DEPLOYMENT.md
+│   └── VALIDATION.md
+├── render-free.yaml          # Free, nonpersistent demo Blueprint
+├── render.yaml               # Separate PAID persistent Blueprint
+├── .env.example
+└── README.md
+```
 
-Requirements: Python 3.11+, Node.js 18+, optionally Tesseract.
+## Local Development
 
-1. Install Tesseract (optional, for scans/images): the UB Mannheim Windows build, then add it to PATH or set `TESSERACT_CMD` in `.env`.
-2. Backend (PowerShell):
-   ```powershell
-   cd backend
-   python -m venv .venv
-   .venv\Scripts\Activate.ps1
-   pip install -r requirements-dev.txt
-   copy ..\.env.example ..\.env   # then edit AI_* values
-   python run.py
-   ```
-   API: http://127.0.0.1:5000 (creates `backend/data/` on first start).
-3. Frontend (second terminal):
-   ```powershell
-   cd frontend
-   npm install
-   npm run dev
-   ```
-   Open http://localhost:5173. Vite proxies `/api` to the backend.
+> The hosted demo does **not** require installing Tesseract on your personal computer. Local OCR testing only requires Tesseract if you want to process scanned PDFs/images **locally**; the deployed Docker image installs it automatically.
 
-The Windows steps have not been run on Windows; everything was developed and tested on Linux.
+**Prerequisites:** Python 3.12 (the version used by the Docker image), Node.js 22 (the deployment build version), npm, and an optional Groq API key for real local AI inference.
 
-## Tests
+### 1. Start the backend
 
-Backend (105 tests; temporary database and upload folder; no API key needed):
+From the repository root, on **Windows PowerShell**:
+
 ```powershell
 cd backend
-pytest -q
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+cd ..
+Copy-Item .env.example .env
 ```
-OCR tests skip when Tesseract is absent. The AI provider's real HTTP path is tested against a **local stub server** (a fixture, not a model).
 
-Frontend:
+Edit the newly created `.env` for local development. At minimum, change the production defaults to:
+
+```dotenv
+APP_ENV=development
+DATABASE_URL=sqlite:///data/documind.db
+UPLOAD_DIR=data/uploads
+CORS_ORIGINS=http://localhost:5173
+GROQ_API_KEY=your_key_if_using_ai
+AI_PROVIDER=groq
+AI_BASE_URL=https://api.groq.com/openai/v1
+AI_MODEL=openai/gpt-oss-20b
+```
+
+Then start Flask:
+
+```powershell
+cd backend
+python run.py
+```
+
+Health endpoint: `http://127.0.0.1:5000/api/health`
+
+### 2. Start the frontend
+
+Open a **second terminal** from the repository root:
+
 ```powershell
 cd frontend
-npm run build                 # typecheck + production build
-# UI tests render the real app in jsdom and call a real backend over HTTP:
-#   terminal A:  cd backend; python -m tests.qa_server            (AI endpoint = local stub on :5055)
-#   terminal B:  cd frontend; npm test
-#   no-credentials screens:  restart A with QA_NO_AI=1, then: npx vitest run src/__tests__/noai.test.tsx
+npm ci
+npm run dev
 ```
-The UI tests wipe all documents and templates in the QA backend's temporary database; never point them at a real instance.
 
-Real-browser checks (headless Chromium, synthetic data): see `frontend/e2e/README.md`.
+Open `http://localhost:5173`. The Vite development server proxies API calls to Flask. If no Groq key is available, upload/review can still be used with manual field entry in development mode; scanned-image processing still needs locally available OCR.
 
-## API
+### 3. Run the tests
 
-`GET /api/health` · `GET /api/meta` · `GET|PUT /api/settings` · `GET /api/dashboard` · `GET /api/expenses/summary` · `GET /api/documents` (`q, status, category, document_type, currency, verification, date_from, date_to, sort, order, page, per_page`) · `POST /api/documents/upload` (optional `template_id`) · `GET|PUT|DELETE /api/documents/<id>` · `POST /api/documents/<id>/confirm` (optional `{"fields":{}}`) · `POST /api/documents/<id>/reprocess` (optional `{"template_id":n|null}`) · `GET /api/documents/<id>/file[?download=1]` · `GET /api/review/queue` (`reason, q, page, per_page`) · `GET|POST /api/templates` · `PUT|DELETE /api/templates/<id>` · `GET /api/reports/summary` · `GET /api/reports/csv?section=monthly|categories|vendors` · `GET /api/export/csv`.
-Responses are `{"data":...,"meta":...}` or `{"error":{"code","message","details"}}`.
+```powershell
+# From the backend directory, with dependencies installed
+python -m pytest -q
+```
+
+```powershell
+# From the frontend directory
+npm run build
+npm test
+```
+
+The repository's [`docs/VALIDATION.md`](docs/VALIDATION.md) records **110 passed, 1 skipped** for backend tests in an earlier preparation run, plus frontend build and UI integration test results. Those tests used simulated AI responses; they do **not** establish a measured accuracy score or independently verify your hosted Groq account.
 
 ## Deployment
 
-Nothing here has been deployed. Constraints to plan for:
+There are **two intentionally separate Render configurations**:
 
-- **Persistence:** SQLite and uploads live on the server's disk. Many hosts give containers an ephemeral filesystem. On Render, for example, the docs say a persistent disk needs a paid service and only the disk mount path survives restarts. On an ephemeral plan, documents and the database vanish on restart. Mount a disk and point `DATABASE_URL` and `UPLOAD_DIR` into it, or use a host with volumes.
-- **Single worker:** keep one app instance/worker (SQLite).
-- **Tesseract:** needs a system package. `backend/Dockerfile` installs it; it is untested.
-- **Frontend:** `npm run build`, host `frontend/dist` on any static host, set `VITE_API_BASE_URL` at build time.
-- **CORS:** set `CORS_ORIGINS` to the exact frontend origin. `*` is ignored on purpose.
-- **No authentication:** anyone who can reach the app can read every document. Do not expose a deployment with real documents without adding auth or a network restriction.
-- **Timeouts:** AI and OCR requests can be slow; set a generous server timeout (the Dockerfile uses 180 s).
+| Configuration | Intended use | Persistence | Hosting cost |
+|---|---|---|---|
+| [`render-free.yaml`](render-free.yaml) | Hacktoberfest demonstration | **Ephemeral SQLite + files** | Free-tier target, subject to provider limits |
+| [`render.yaml`](render.yaml) | Persistent deployment planning | PostgreSQL + persistent upload disk | **Paid resources** |
 
-## Known limitations
+### Free Demo — Recommended for Reviewers
 
-- No user accounts or authentication, so there is no user menu; single-tenant. No notifications (there is no event data to base them on).
-- Synchronous processing; large scans block a request. One file per upload.
-- The review queue and report vendor lists are computed in Python over all records, fine for small data sets, not for thousands.
-- Amounts are stored with 2 decimals; no currency conversion. Every confirmed invoice counts as an expense, so invoices you *issue* should not be confirmed.
-- Templates restrict fields and set defaults; they can't define new custom fields.
-- Reports export CSV only (no PDF).
-- PDF preview uses the browser's built-in viewer (some mobile browsers show only the first page). This could not be visually verified in automated runs because headless Chromium has no PDF viewer; image previews were verified.
-- Tested in Chromium only. Not tested in Safari or Firefox, or on real phones. No automated accessibility audit (axe/Lighthouse) was run; colours were chosen to keep white-on-coral text at 4.5:1 or better.
-- The visual match to the reference screenshot is by eye, not measured. AI extraction accuracy has not been measured, and no real AI provider was tested (only a local stub).
+1. Push the repository to GitHub.
+2. In Render, select **New → Blueprint** and explicitly choose **`render-free.yaml`**.
+3. Confirm the services are `documind-demo-api` (**Free Web Service**) and `documind-demo-web` (**Static Site**) — with no paid database or disk.
+4. Enter `DEMO_ACCESS_CODE` (private, **16+ characters**), `GROQ_API_KEY`, and the exact frontend HTTPS origin in `CORS_ORIGINS`.
+5. Set the frontend's `VITE_API_BASE_URL` to the **actual backend URL** (without an `/api` suffix). Render automatically generates `DEMO_SIGNING_SECRET`.
+6. Wait for both deployments, then test `/api/health`, unlock the demo, upload synthetic documents, review the extraction, and export a CSV.
 
-## Privacy
+**Full instructions and troubleshooting:** [`docs/FREE_DEMO_DEPLOYMENT.md`](docs/FREE_DEMO_DEPLOYMENT.md).
 
-Files and extracted text are stored on the server. When AI is configured, document text is sent to your chosen third-party AI provider, so this is not "local-only". No encryption at rest, compliance or certification is claimed. Uploaded files are only reachable via `GET /api/documents/<id>/file`, which has no authentication. Logs record document ids and statuses, not content. API keys are never returned by any endpoint (this is covered by a test). Use synthetic documents for demos.
+> **Free-tier caveats:** possible cold starts, API rate limits, OCR memory constraints, and loss of all SQLite records/uploads on restart or redeploy. Pricing and allocations can change. Check the Render confirmation screen before accepting any paid resources.
 
-## Reused code and libraries
+## API Overview
 
-Flask, Flask-CORS, SQLAlchemy, PyMuPDF, Pillow, pytesseract/Tesseract, requests, python-dotenv, React, Vite, Tailwind CSS, Recharts, Lucide. Testing: pytest, Vitest, Testing Library, jsdom, puppeteer-core with @sparticuz/chromium. The application code was written for this project. The UI layout follows a reference screenshot supplied by the project owner (coral sidebar, document list, preview pane); branding and content are original.
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/health` | Public health, database, OCR, and AI-configuration indicators |
+| `POST /api/demo/unlock` | Exchange the private demo access code for a signed session |
+| `GET /api/documents` | Browse/filter uploaded documents |
+| `POST /api/documents/upload` | Upload and process a document |
+| `POST /api/documents/<id>/confirm` | Confirm edited/extracted fields |
+| `GET /api/review/queue` | View documents needing human review |
+| `GET /api/dashboard` | Overview data |
+| `GET /api/reports/summary` | Report summaries |
+| `GET /api/export/csv` | Export expense records |
 
-## Future improvements
+In demo mode, all document/data endpoints except `/api/health` and the access-code exchange require a valid bearer session token. See backend route modules for the full API contract.
 
-Authentication and multi-user support, background job queue, Postgres, currency conversion, line items, duplicate detection, bulk upload, PDF reports, accuracy evaluation set.
+## Validation & Current Status
+
+| Area | Status | Evidence / boundary |
+|---|---|---|
+| React frontend | **Deployed; reported working** | Project owner confirmed the page and workflow worked |
+| Flask API | **Deployed; health check returned OK** | Database, OCR availability and AI configuration reported OK |
+| OCR + AI extraction | **Reported working in live demo** | Sample receipt tested by the project owner; no measured accuracy benchmark |
+| Backend automated tests | **Previously recorded** | 110 passed, 1 skipped in [`docs/VALIDATION.md`](docs/VALIDATION.md) |
+| Frontend tests/build | **Previously recorded** | Build and UI tests documented in [`docs/VALIDATION.md`](docs/VALIDATION.md) |
+| Production security/scalability | **Not established** | Shared-access demo, synchronous processing, ephemeral storage |
+
+The public health endpoint being healthy is **not by itself proof** that every extraction is correct. Financial fields should always be reviewed.
+
+## Security, Privacy & Limitations
+
+- **Shared demo, not user accounts.** Anyone using the same code shares the same workspace and can access its stored demo documents. The access code must **never** appear in this README or the GitHub repository.
+- **Use synthetic documents only.** Do not upload real customer invoices, personal information, or confidential financial records.
+- **Third-party inference.** Extracted document text is sent to the configured AI provider (currently Groq); this is **not a fully offline/private inference stack**.
+- **Ephemeral data.** The free Render filesystem is temporary; records and uploads can disappear without recovery. No backups or durability guarantees are provided.
+- **Resource limits.** AI/OCR run in the upload request, and large scans can time out or exhaust low-tier resources. The demo limits upload size, pages, OCR resolution, and concurrent processing.
+- **AI is fallible.** No calibrated extraction confidence or production accuracy score is claimed. Required fields and formats are validated, but user confirmation remains essential.
+- **Reporting scope.** CSV export is supported; PDF report export, automatic FX conversion, bulk uploads, and independent multi-user workspaces are not implemented.
+- **Financial scope.** This is document/expense assistance, **not** certified bookkeeping, tax advice, or an accounting system.
+
+## Side-Hustle Potential
+
+DocuMind AI explores a straightforward business hypothesis: **freelancers and microbusinesses may pay to spend less time entering receipts while retaining control over every number**.
+
+Possible future offerings include a hosted subscription, a setup-and-automation service for small firms, or integrations with existing bookkeeping workflows. **These are ideas, not launched plans or validated revenue claims.**
+
+### Roadmap
+
+- [ ] Separate user accounts, roles, and document isolation
+- [ ] Persistent managed database and object storage
+- [ ] Asynchronous processing and job queue
+- [ ] Duplicate detection and item-level extraction
+- [ ] Bulk upload and integrations with bookkeeping tools
+- [ ] Reproducible document-extraction accuracy benchmark
+- [ ] Multi-currency conversion with a documented exchange-rate source
+- [ ] PDF reports, audit history, and retention policies
+
+## Contributing
+
+Contributions, bug reports, and feature suggestions are welcome through GitHub issues and pull requests. For any change involving document extraction, privacy, or financial totals, include a test or clear reproduction steps.
+
+**Licensing:** The current repository package does not include a `LICENSE` file. Choose and add an explicit license before describing the repository as MIT-licensed or making redistribution permissions claims.
+
+## Author & Acknowledgements
+
+**Imran Ghafoor** — AI / Machine Learning developer  
+[GitHub Profile](https://github.com/Imran-Ghafoor594) · [Portfolio](https://imranghafoor.vercel.app/)
+
+Built with React, Flask, PyMuPDF, Tesseract, SQLAlchemy, Groq-compatible inference, and Render. Developed as a practical **Hacktoberfest 2026 Side Hustle** prototype.
+
+<div align="center">
+
+<img width="100%" alt="DocuMind AI footer" src="https://capsule-render.vercel.app/api?type=waving&amp;section=footer&amp;height=140&amp;color=0:071A2B,50:164E77,100:2A7FA5&amp;text=DocuMind%20AI&amp;fontSize=28&amp;fontColor=FFFFFF&amp;animation=fadeIn" />
+
+*Extract smarter. Review confidently. Stay in control.*
+
+</div>
