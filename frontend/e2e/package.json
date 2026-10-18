@@ -1,0 +1,15 @@
+{
+  "name": "documind-ai-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Optional real-browser checks (headless Chromium). Not part of the app's dependencies.",
+  "scripts": {
+    "layout": "node layout.mjs",
+    "flow": "node flow.mjs",
+    "screenshots": "node screenshots.mjs"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^153.0.0",
+    "puppeteer-core": "^25.14.0"
+  }
+}

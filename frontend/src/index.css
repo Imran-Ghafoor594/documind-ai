@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { --topbar: 3.5rem; }
+  body { @apply bg-canvas text-ink-800 antialiased; }
+  h1, h2, h3, h4 { @apply text-ink-900; }
+  :focus-visible { outline: 2px solid #b33121; outline-offset: 2px; border-radius: 4px; }
+  .on-brand :focus-visible { outline-color: #fff; }
+  /* grid items default to min-width:auto, which lets one long unbreakable string stretch the whole page */
+  .grid > * { min-width: 0; }
+  button, [role="button"], select { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@layer components {
+  .card { @apply min-w-0 rounded-lg border border-ink-200 bg-white shadow-card; }
+  .btn { @apply inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:opacity-50; }
+  .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-secondary { @apply btn border border-ink-300 bg-white text-ink-800 hover:bg-ink-50; }
+  .btn-ghost { @apply btn text-ink-700 hover:bg-ink-100; }
+  .btn-danger { @apply btn border border-red-200 bg-white text-red-700 hover:bg-red-50; }
+  .btn-danger-solid { @apply btn bg-red-700 text-white hover:bg-red-800; }
+  .input { @apply w-full rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-500 disabled:bg-ink-100 disabled:text-ink-600; }
+  .label { @apply mb-1 block text-xs font-semibold text-ink-700; }
+  .th { @apply whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-ink-600; }
+  .td { @apply px-3 py-2.5 text-sm; }
+  .pane-title { @apply text-sm font-semibold text-ink-900; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

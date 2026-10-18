@@ -1,0 +1,71 @@
+# TEMPORARY FREE-TIER DEMO ONLY. Use render.yaml for paid persistent production.
+# WARNING: /tmp/ SQLite database and uploads are EPHEMERAL; restart loses data.
+# Setup: create Blueprint from this file; enter access code, Groq key,
+# and frontend HTTPS origin when prompted. Then set VITE_API_BASE_URL
+# to the deployed API URL and redeploy the static site.
+services:
+  - type: web
+    name: documind-demo-api
+    runtime: docker
+    region: singapore
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: APP_ENV
+        value: demo
+      - key: DATABASE_URL
+        value: sqlite:////tmp/documind-demo/documind.db
+      - key: UPLOAD_DIR
+        value: /tmp/documind-demo/uploads
+      - key: DEMO_ACCESS_CODE
+        sync: false
+      - key: DEMO_SIGNING_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: groq
+      - key: AI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: AI_MODEL
+        value: openai/gpt-oss-20b
+      - key: AI_JSON_MODE
+        value: "true"
+      - key: AI_MAX_COMPLETION_TOKENS
+        value: "2048"
+      - key: AI_MAX_TEXT_CHARS
+        value: "6000"
+      - key: AI_TIMEOUT_SECONDS
+        value: "30"
+      - key: AI_MAX_RETRIES
+        value: "1"
+      - key: MAX_UPLOAD_MB
+        value: "3"
+      - key: MAX_PDF_PAGES
+        value: "3"
+      - key: OCR_DPI
+        value: "100"
+      - key: OCR_TIMEOUT_SECONDS
+        value: "20"
+      - key: OCR_LANGUAGES
+        value: eng
+  - type: web
+    name: documind-demo-web
+    runtime: static
+    buildCommand: cd frontend && npm ci --no-audit --no-fund && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_DEMO_MODE
+        value: "true"
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
