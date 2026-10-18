@@ -77,30 +77,7 @@ The user then checks the suggestions, edits any mistakes, and confirms the recor
 
 **Demo restrictions:** files up to **3 MB**, up to **3 PDF pages**, temporary shared storage, and no real or confidential documents. The free backend may take time to wake after inactivity, and data can disappear on restart/redeploy.
 
-## Product Screenshots
 
-All bundled screenshots illustrate the project UI using synthetic documents. The paths below reference images already included in this repository.
-
-| Document workspace | AI extraction |
-|:---:|:---:|
-| ![Document list and preview workspace](docs/screenshots/documents-workspace.png) | ![AI extraction with proposed fields](docs/screenshots/ai-extraction.png) |
-
-| Review queue | Business overview |
-|:---:|:---:|
-| ![Human review queue](docs/screenshots/review-queue.png) | ![Overview dashboard](docs/screenshots/overview.png) |
-
-| Confirmed expenses | Reports |
-|:---:|:---:|
-| ![Confirmed expense records](docs/screenshots/expenses.png) | ![Expense reporting interface](docs/screenshots/reports.png) |
-
-<details>
-<summary><strong>Mobile screenshots</strong></summary>
-
-| Mobile documents | Mobile review |
-|:---:|:---:|
-| ![Mobile documents](docs/screenshots/mobile-documents.png) | ![Mobile review queue](docs/screenshots/mobile-review.png) |
-
-</details>
 
 ## Key Features
 
@@ -384,7 +361,7 @@ Possible future offerings include a hosted subscription, a setup-and-automation 
 
 Contributions, bug reports, and feature suggestions are welcome through GitHub issues and pull requests. For any change involving document extraction, privacy, or financial totals, include a test or clear reproduction steps.
 
-**Licensing:** The current repository package does not include a `LICENSE` file. Choose and add an explicit license before describing the repository as MIT-licensed or making redistribution permissions claims.
+**Licensing:** The current repository package has MIT License.
 
 ## Author & Acknowledgements
 
